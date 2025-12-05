@@ -15,7 +15,7 @@ export default function WordManagement() {
             // Filter words by academyId
             const { data, error } = await supabase
                 .from('words')
-                .select('*')
+                .select('*, english:word, korean:meaning')
                 .eq('academy_id', academyId);
 
             if (error) throw error;
@@ -55,8 +55,8 @@ export default function WordManagement() {
             const formattedWords = jsonData.map(row => ({
                 book_name: row.단어장명 || row.book_name || '기본',
                 word_number: row.번호 || row.word_number ? parseInt(row.번호 || row.word_number) : null,
-                english: row.영단어 || row.english || row.영어 || '',
-                korean: row.뜻 || row.korean || row.한글 || ''
+                english: row.영단어 || row.english || row.영어 || row.word || '',
+                korean: row.뜻 || row.korean || row.한글 || row.meaning || ''
             })).filter(w => w.english && w.korean);
 
             console.log('Formatted words:', formattedWords);
@@ -71,10 +71,12 @@ export default function WordManagement() {
             console.log('Uploading words:', wordsToUpload);
             const academyId = localStorage.getItem('academyId') || 'academy_default';
 
-            // Add academy_id to each word
             const wordsWithAcademy = wordsToUpload.map(w => ({
-                ...w,
-                academy_id: academyId
+                book_name: w.book_name,
+                academy_id: academyId,
+                word: w.english,
+                meaning: w.korean,
+                word_number: w.word_number
             }));
 
             // Supabase bulk insert
@@ -137,9 +139,11 @@ export default function WordManagement() {
         try {
             const academyId = localStorage.getItem('academyId') || 'academy_default';
             const { error } = await supabase.from('words').insert({
-                ...newWord,
-                word_number: newWord.word_number ? parseInt(newWord.word_number) : null,
-                academy_id: academyId
+                book_name: newWord.book_name,
+                academy_id: academyId,
+                word: newWord.english,
+                meaning: newWord.korean,
+                word_number: newWord.word_number ? parseInt(newWord.word_number) : null
             });
 
             if (error) throw error;
@@ -206,8 +210,8 @@ export default function WordManagement() {
                 .update({
                     book_name: editingWord.book_name,
                     word_number: editingWord.word_number ? parseInt(editingWord.word_number) : null,
-                    english: editingWord.english,
-                    korean: editingWord.korean
+                    word: editingWord.english,
+                    meaning: editingWord.korean
                 })
                 .eq('id', editingWord.id);
 
