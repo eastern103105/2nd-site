@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../supabase';
 
+// Login Component with Sign Up Feature
 export default function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
