@@ -7,6 +7,7 @@ export default function Login() {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [isSignUp, setIsSignUp] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -54,6 +55,35 @@ export default function Login() {
 
         try {
             const email = getEmail(username);
+
+            if (isSignUp) {
+                // Sign Up Logic
+                const { data: { user }, error: signUpError } = await supabase.auth.signUp({
+                    email: email,
+                    password: password,
+                });
+                if (signUpError) throw signUpError;
+
+                // Create Profile
+                const userData = {
+                    id: user.id,
+                    email: email,
+                    username: username,
+                    name: username.split('@')[0],
+                    role: 'student', // Default role
+                    created_at: new Date().toISOString(),
+                    academy_id: 'academy_default',
+                    status: 'active'
+                };
+
+                const { error: dbError } = await supabase.from('users').insert(userData);
+                if (dbError) throw dbError;
+
+                alert('회원가입이 완료되었습니다! 이제 로그인해주세요.');
+                setIsSignUp(false);
+                setLoading(false);
+                return;
+            }
 
             // 1. Supabase SignIn
             const { data: { session, user }, error: signInError } = await supabase.auth.signInWithPassword({
@@ -183,8 +213,21 @@ export default function Login() {
                         disabled={loading}
                         className="w-full py-2 text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-200 transition-all font-medium flex justify-center items-center"
                     >
-                        {loading ? '로그인 중...' : '로그인'}
+                        {loading ? '처리 중...' : (isSignUp ? '회원가입' : '로그인')}
                     </button>
+
+                    <div className="flex justify-center mt-4">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsSignUp(!isSignUp);
+                                setError('');
+                            }}
+                            className="text-sm text-indigo-600 hover:text-indigo-800 font-medium"
+                        >
+                            {isSignUp ? '이미 계정이 있으신가요? 로그인' : '계정이 없으신가요? 회원가입'}
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
