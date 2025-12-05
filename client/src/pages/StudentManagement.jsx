@@ -94,58 +94,35 @@ export default function StudentManagement() {
             return;
         }
 
+        if (!newStudent.name) {
+            alert('이름을 입력해주세요.');
+            return;
+        }
+
         try {
             const academyId = localStorage.getItem('academyId') || 'academy_default';
-            const email = newStudent.username.includes('@') ? newStudent.username : `${newStudent.username}@wordtest.com`;
 
-            // 1. SignUp with Supabase Auth
-            // Note: By default, SignUp logs in the user. 
-            // To prevent this in an admin interface, we should ideally use a server-side admin client (service role) 
-            // OR use a toggle if Supabase allows "autoSignIn: false".
-            // Supabase JS SDK sign up option:
-            // const { data, error } = await supabase.auth.signUp({
-            //   email: 'example@email.com',
-            //   password: 'example-password',
-            //   options: {
-            //     data: { ... },
-            //   }
-            // })
-            // However, Supabase Auth on client side WILL persist the session for the new user if not careful.
-            // A workaround is to create a second client instance in memory, or use Admin API via edge function.
-            // Since we moved to Supabase, we can't use "Secondary App" like Firebase easily without raw API calls or creating a temporary client.
-            // BUT, Supabase warns against creating users from client side for admin purposes without logging out.
-            // SOLUTION: We should call a backend function (Supabase Edge Function or Vercel API) to create the user using Service Role.
-            // However, we haven't set up that API yet.
-            // For now, I will simulate the process or warn the user.
-            // Actually, I can use the standard client but it might mess up the session.
-            // Let's TRY to use a simple hack: create user via API endpoint if we had one.
-            // Check 'api/admin/create-student'? No.
-
-            // As a fallback for this 'Refactor Frontend' task without a ready backend for user creation:
-            // I will implement a client-side creation that MIGHT sign out the admin.
-            // Wait, that is bad UX.
-            // Let's see if we can use the 'secondary client' approach with Supabase?
-            // Supabase client is stateless if we don't use 'persistSession'.
-
-            // Temporary Workaround: Alert user that they need to use the Supabase Dashboard or we need to add a backend function.
-            // OR, assume `supabase.auth.admin` is available? No, it's not safe in public client.
-
-            // I'll add a TODO/Alert for this specific action since it requires backend privileges (Service Role) 
-            // to create a user without signing out the current admin.
-
-            alert("보안상의 이유로, 관리자 모드에서의 학생 직접 등록은 현재 서버 함수 연동이 필요합니다. \n추후 '학생 등록 API'를 구현해야 합니다. \n(임시: Supabase 대시보드에서 등록해주세요.)");
-
-            // Code for if we had the API:
-            /*
+            // 서버 API를 통해 학생 등록
             const response = await fetch('/api/admin/create-student', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...newStudent, academyId })
+                body: JSON.stringify({
+                    username: newStudent.username,
+                    password: newStudent.password,
+                    name: newStudent.name,
+                    academyId: academyId
+                })
             });
-            */
 
-            // Just for UI demo (clearing form)
-            // setNewStudent({ username: '', password: '', name: '' });
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.error || '학생 등록 실패');
+            }
+
+            alert(result.message || '학생이 등록되었습니다!');
+            setNewStudent({ username: '', password: '', name: '' });
+            fetchStudents();
 
         } catch (err) {
             console.error("Registration error:", err);
