@@ -101,26 +101,51 @@ export default function StudentManagement() {
 
         try {
             const academyId = localStorage.getItem('academyId') || 'academy_default';
+            const email = newStudent.username.includes('@') ? newStudent.username : `${newStudent.username}@wordtest.com`;
 
-            // 서버 API를 통해 학생 등록
-            const response = await fetch('/api/admin/create-user', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: newStudent.username,
-                    password: newStudent.password,
-                    name: newStudent.name,
-                    academyId: academyId
-                })
+            // 현재 세션 저장
+            const { data: { session: currentSession } } = await supabase.auth.getSession();
+
+            // 새 학생 계정 생성 (이 과정에서 세션이 바뀔 수 있음)
+            const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+                email: email,
+                password: newStudent.password,
             });
 
-            const result = await response.json();
+            if (signUpError) throw signUpError;
 
-            if (!response.ok) {
-                throw new Error(result.error || '학생 등록 실패');
+            const userId = signUpData.user?.id;
+            if (!userId) throw new Error('사용자 ID를 가져올 수 없습니다.');
+
+            // public.users 테이블에 학생 정보 추가
+            const { error: profileError } = await supabase.from('users').insert({
+                id: userId,
+                email: email,
+                username: newStudent.username,
+                name: newStudent.name,
+                role: 'student',
+                academy_id: academyId,
+                status: 'active',
+                book_name: '기본',
+                current_word_index: 0,
+                study_days: ['월', '화', '수', '목', '금'],
+                words_per_session: 10
+            });
+
+            if (profileError) {
+                console.error('Profile error:', profileError);
+                throw new Error('프로필 생성 실패: ' + profileError.message);
             }
 
-            alert(result.message || '학생이 등록되었습니다!');
+            // 원래 관리자 세션으로 복구
+            if (currentSession) {
+                await supabase.auth.setSession({
+                    access_token: currentSession.access_token,
+                    refresh_token: currentSession.refresh_token
+                });
+            }
+
+            alert('학생이 등록되었습니다!');
             setNewStudent({ username: '', password: '', name: '' });
             fetchStudents();
 
