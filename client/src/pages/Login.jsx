@@ -170,7 +170,7 @@ export default function Login() {
                             {branding.title}
                         </h1>
                         <h2 className="text-lg sm:text-xl font-bold text-gray-600 tracking-wide">
-                            {branding.subtitle}
+                            {branding.subtitle} - VER 2.0
                         </h2>
                     </div>
                     <p className="text-gray-500 text-sm">
