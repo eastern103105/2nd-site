@@ -1,0 +1,65 @@
+{
+    "indexes": [
+        {
+            "collectionGroup": "words",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "academyId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "book_name",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "word_number",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "test_results",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "user_id",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "date",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "words",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "book_name",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "word_number",
+                    "order": "ASCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "student_daily_summaries",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "userId",
+                    "order": "ASCENDING"
+                },
+                {
+                    "fieldPath": "date",
+                    "order": "DESCENDING"
+                }
+            ]
+        }
+    ],
+    "fieldOverrides": []
+}

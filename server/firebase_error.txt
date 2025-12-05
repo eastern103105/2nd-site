@@ -1,0 +1,4 @@
+Service Account Project: eastern-wordtest
+Firebase Init OK
+ERRCODE: 16
+MSG: 16 UNAUTHENTICATED: Request had invalid authentica

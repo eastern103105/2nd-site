@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to check if user is super_admin
+    function isSuperAdmin() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
+    }
+
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // Helper function to check if user is accessing their own data
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if isAdmin() || isOwner(userId) || isSuperAdmin();
+    }
+
+    match /books/{bookId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin() || isSuperAdmin();
+    }
+
+    match /student_status_logs/{logId} {
+      allow read: if request.auth != null && (resource.data.student_id == request.auth.uid || isAdmin() || isSuperAdmin());
+      allow create: if isAdmin() || isSuperAdmin(); // Only admins change status
+    }
+
+    match /words/{wordId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin() || isSuperAdmin();
+    }
+
+    match /test_results/{resultId} {
+      allow read: if request.auth != null && (resource.data.user_id == request.auth.uid || isAdmin() || isSuperAdmin());
+      allow create: if request.auth != null;
+    }
+
+    match /classes/{classId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin() || isSuperAdmin();
+    }
+
+    match /dollar_history/{historyId} {
+      allow read: if request.auth != null && (resource.data.user_id == request.auth.uid || isAdmin() || isSuperAdmin());
+      allow create: if request.auth != null && request.resource.data.user_id == request.auth.uid;
+    }
+
+    match /settings/{settingId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin() || isSuperAdmin();
+    }
+
+    match /battles/{battleId} {
+      allow read, write: if request.auth != null;
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin() || isSuperAdmin();
+    }
+
+    match /chats/{chatId} {
+      allow read, write: if request.auth != null;
+      
+      match /messages/{messageId} {
+        allow read, write: if request.auth != null;
+      }
+    }
+
+    match /student_daily_summaries/{summaryId} {
+      allow read: if request.auth != null && 
+        (resource.data.userId == request.auth.uid || isAdmin() || isSuperAdmin());
+      allow create: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+      allow update: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
+    }
+
+    match /academies/{academyId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin() || isSuperAdmin();
+    }
+  }
+}
