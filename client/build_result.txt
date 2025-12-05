@@ -1,0 +1,7 @@
+﻿
+> client@0.0.1 build
+> vite build
+
+[36mvite v7.2.4 [32mbuilding client environment for production...[36m[39m
+transforming...
+[32m??[39m 2124 modules transformed.
