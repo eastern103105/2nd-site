@@ -103,7 +103,7 @@ export default function StudentManagement() {
             const academyId = localStorage.getItem('academyId') || 'academy_default';
 
             // 서버 API를 통해 학생 등록
-            const response = await fetch('/api/admin/create-student', {
+            const response = await fetch('/api/admin/create-user', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
